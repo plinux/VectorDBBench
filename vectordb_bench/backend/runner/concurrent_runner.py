@@ -182,6 +182,7 @@ class ConcurrentInsertRunner:
         count = 0
         self._iter_lock = threading.Lock()
         self._dataset_iter = iter(self.dataset)
+        self.db.prepare_filter(self.filters)
 
         with self.db.init():
             log.info(

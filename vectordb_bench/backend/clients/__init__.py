@@ -54,6 +54,7 @@ class DB(Enum):
     Hologres = "Alibaba Cloud Hologres"
     TencentElasticsearch = "TencentElasticsearch"
     AliSQL = "AlibabaCloudRDSMySQL"
+    MySQL = "MySQL"
     Doris = "Doris"
     TurboPuffer = "TurboPuffer"
     Zvec = "Zvec"
@@ -234,6 +235,11 @@ class DB(Enum):
             from .alisql.alisql import AliSQL
 
             return AliSQL
+
+        if self == DB.MySQL:
+            from .mysql_vector.mysql_vector import MySQLVector
+
+            return MySQLVector
 
         if self == DB.Endee:
             from .endee.endee import Endee
@@ -443,6 +449,11 @@ class DB(Enum):
 
             return AliSQLConfig
 
+        if self == DB.MySQL:
+            from .mysql_vector.config import MySQLVectorConfig
+
+            return MySQLVectorConfig
+
         if self == DB.Endee:
             from .endee.config import EndeeConfig
 
@@ -619,9 +630,14 @@ class DB(Enum):
             return TencentElasticsearchIndexConfig
 
         if self == DB.AliSQL:
-            from .alisql.alisql import AliSQLIndexConfig
+            from .alisql.config import AliSQLIndexConfig
 
             return AliSQLIndexConfig
+
+        if self == DB.MySQL:
+            from .mysql_vector.config import _mysql_vector_case_config
+
+            return _mysql_vector_case_config.get(index_type)
 
         if self == DB.PolarDB:
             from .polardb.config import _polardb_case_config

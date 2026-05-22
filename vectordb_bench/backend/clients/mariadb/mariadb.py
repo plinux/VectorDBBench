@@ -1,16 +1,19 @@
 import logging
 from contextlib import contextmanager
+from typing import Any
 
-import mariadb
+import mysql.connector as mysql
 import numpy as np
 
-from ..api import VectorDB
+from ..api import FilterOp, VectorDB
 from .config import MariaDBConfigDict, MariaDBIndexConfig
 
 log = logging.getLogger(__name__)
 
 
 class MariaDB(VectorDB):
+    supported_filter_types: list[FilterOp] = [FilterOp.NonFilter, FilterOp.NumGE]
+
     def __init__(
         self,
         dim: int,
@@ -40,8 +43,8 @@ class MariaDB(VectorDB):
         self.conn = None
 
     @staticmethod
-    def _create_connection(**kwargs) -> tuple[mariadb.Connection, mariadb.Cursor]:
-        conn = mariadb.connect(**kwargs)
+    def _create_connection(**kwargs) -> tuple[mysql.MySQLConnection, Any]:
+        conn = mysql.connect(**kwargs)
         cursor = conn.cursor()
 
         assert conn is not None, "Connection is not initialized"
@@ -108,14 +111,14 @@ class MariaDB(VectorDB):
                 self.cursor.execute(f"SET mhnsw_ef_search = {search_param['ef_search']}")
             self.cursor.execute("COMMIT")
 
-        self.insert_sql = f"INSERT INTO {self.db_name}.{self.table_name} (id, v) VALUES (%s, %s)"
+        self.insert_sql = f"INSERT INTO {self.db_name}.{self.table_name} (id, v) VALUES (%s, UNHEX(%s))"
         self.select_sql = (
-            f"SELECT id FROM {self.db_name}.{self.table_name}"
-            f"ORDER by vec_distance_{search_param['metric_type']}(v, %s) LIMIT %d"
+            f"SELECT id FROM {self.db_name}.{self.table_name} "
+            f"ORDER by vec_distance_{search_param['metric_type']}(v, UNHEX(%s)) LIMIT %s"
         )
         self.select_sql_with_filter = (
-            f"SELECT id FROM {self.db_name}.{self.table_name} WHERE id >= %d "
-            f"ORDER by vec_distance_{search_param['metric_type']}(v, %s) LIMIT %d"
+            f"SELECT id FROM {self.db_name}.{self.table_name} WHERE id >= %s "
+            f"ORDER by vec_distance_{search_param['metric_type']}(v, UNHEX(%s)) LIMIT %s"
         )
 
         try:
@@ -129,7 +132,7 @@ class MariaDB(VectorDB):
     def ready_to_load(self) -> bool:
         pass
 
-    def optimize(self) -> None:
+    def optimize(self, data_size: int | None = None) -> None:
         assert self.conn is not None, "Connection is not initialized"
         assert self.cursor is not None, "Cursor is not initialized"
 
@@ -152,7 +155,7 @@ class MariaDB(VectorDB):
 
     @staticmethod
     def vector_to_hex(v):  # noqa: ANN001
-        return np.array(v, "float32").tobytes()
+        return np.array(v, "float32").tobytes().hex()
 
     def insert_embeddings(
         self,

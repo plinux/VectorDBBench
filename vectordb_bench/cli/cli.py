@@ -171,6 +171,10 @@ def get_custom_case_config(parameters: dict) -> dict:
             "description": parameters["custom_case_description"],
             "load_timeout": parameters["custom_case_load_timeout"],
             "optimize_timeout": parameters["custom_case_optimize_timeout"],
+            "label_percentage": parameters["custom_dataset_label_percentage"],
+            "filter_mode": parameters["custom_dataset_filter_mode"],
+            "filter_rate": parameters["custom_dataset_filter_rate"],
+            "use_filter": parameters["custom_dataset_use_filter"],
             "dataset_config": {
                 "name": parameters["custom_dataset_name"],
                 "dir": parameters["custom_dataset_dir"],
@@ -431,6 +435,43 @@ class CommonTypedDict(TypedDict):
             "--custom-dataset-with-gt/--skip-custom-dataset-with-gt",
             help="Custom dataset with ground truth",
             default=True,
+            show_default=True,
+        ),
+    ]
+    custom_dataset_use_filter: Annotated[
+        bool,
+        click.option(
+            "--custom-dataset-use-filter/--skip-custom-dataset-use-filter",
+            help="Enable label filter mode for PerformanceCustomDataset",
+            default=False,
+            show_default=True,
+        ),
+    ]
+    custom_dataset_label_percentage: Annotated[
+        float,
+        click.option(
+            "--custom-dataset-label-percentage",
+            help="Label percentage for filtered custom dataset cases",
+            default=0.5,
+            show_default=True,
+        ),
+    ]
+    custom_dataset_filter_mode: Annotated[
+        str,
+        click.option(
+            "--custom-dataset-filter-mode",
+            type=click.Choice(["label", "numge"], case_sensitive=False),
+            help="Filter mode for filtered custom dataset cases",
+            default="label",
+            show_default=True,
+        ),
+    ]
+    custom_dataset_filter_rate: Annotated[
+        float,
+        click.option(
+            "--custom-dataset-filter-rate",
+            help="Numeric filter rate for custom dataset NumGE cases",
+            default=0.5,
             show_default=True,
         ),
     ]

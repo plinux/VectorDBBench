@@ -4,13 +4,15 @@ from contextlib import contextmanager
 import mysql.connector as mysql
 import numpy as np
 
-from ..api import VectorDB
+from ..api import FilterOp, VectorDB
 from .config import AliSQLConfigDict, AliSQLIndexConfig
 
 log = logging.getLogger(__name__)
 
 
 class AliSQL(VectorDB):
+    supported_filter_types: list[FilterOp] = [FilterOp.NonFilter, FilterOp.NumGE]
+
     def __init__(
         self,
         dim: int,
@@ -101,6 +103,7 @@ class AliSQL(VectorDB):
         search_param = self.case_config.search_param()
 
         self.cursor.execute("SET sql_mode = ''")
+        self.cursor.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED")
 
         if index_param["index_type"] == "HNSW":
             if search_param["ef_search"] is not None:

@@ -18,6 +18,7 @@ from ..backend.clients.lindorm.cli import LindormHNSW, LindormIVFBQ, LindormIVFP
 from ..backend.clients.mariadb.cli import MariaDBHNSW
 from ..backend.clients.memorydb.cli import MemoryDB
 from ..backend.clients.milvus.cli import MilvusAutoIndex
+from ..backend.clients.mysql_vector.cli import MySQLDiskANN, MySQLHNSW
 from ..backend.clients.oceanbase.cli import OceanBaseHNSW, OceanBaseIVF
 from ..backend.clients.oss_opensearch.cli import OSSOpenSearch
 from ..backend.clients.pgdiskann.cli import PgDiskAnn
@@ -65,6 +66,8 @@ cli.add_command(AlloyDBScaNN)
 cli.add_command(OceanBaseHNSW)
 cli.add_command(OceanBaseIVF)
 cli.add_command(MariaDBHNSW)
+cli.add_command(MySQLHNSW)
+cli.add_command(MySQLDiskANN)
 cli.add_command(TiDB)
 cli.add_command(CockroachDBCli)
 cli.add_command(Clickhouse)

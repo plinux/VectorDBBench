@@ -371,6 +371,8 @@ class PerformanceCustomDataset(PerformanceCase):
     gt_file: str
     dataset: DatasetManager
     label_percentage: float | None = None
+    filter_mode: str = "label"
+    filter_rate: float | None = None
     use_filter: bool
 
     def __init__(
@@ -381,6 +383,8 @@ class PerformanceCustomDataset(PerformanceCase):
         optimize_timeout: float,
         dataset_config: dict,
         label_percentage: float | None = None,
+        filter_mode: str = "label",
+        filter_rate: float | None = None,
         use_filter: bool = False,
         **kwargs,
     ):
@@ -411,11 +415,21 @@ class PerformanceCustomDataset(PerformanceCase):
             dataset=DatasetManager(data=dataset),
             use_filter=use_filter,
             label_percentage=label_percentage,
+            filter_mode=filter_mode,
+            filter_rate=filter_rate,
         )
 
     @property
     def filters(self) -> Filter:
         if self.use_filter is True:
+            if self.filter_mode == "numge":
+                int_field = self.dataset.data.train_id_field
+                int_value = int(self.dataset.data.size * self.filter_rate)
+                return NewIntFilter(
+                    filter_rate=self.filter_rate,
+                    int_field=int_field,
+                    int_value=int_value,
+                )
             return LabelFilter(label_percentage=self.label_percentage)
         return NonFilter(gt_file_name=self.gt_file)
 
